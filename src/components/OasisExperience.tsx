@@ -310,7 +310,7 @@ function WatchModel({
   });
 
   // Strap is built from many small links so it reads as a bracelet/strap.
-  const links = useMemo(() => Array.from({ length: 7 }), []);
+  const links = useMemo(() => Array.from({ length: 8 }), []);
 
   return (
     <group
@@ -345,7 +345,7 @@ function WatchModel({
         </mesh>
 
         {/* Fluted bezel ring */}
-        <mesh position={[0, 0.16, 0]} castShadow>
+        <mesh position={[0, 0.16, 0]} rotation={[-Math.PI / 2, 0, 0]} castShadow>
           <torusGeometry args={[0.97, 0.07, 24, 80]} />
           <meshStandardMaterial
             color={caseColor}
@@ -367,20 +367,19 @@ function WatchModel({
         </mesh>
 
         {/* Domed sapphire crystal */}
-        <mesh position={[0, 0.27, 0]}>
-          <sphereGeometry
-            args={[0.92, 48, 48, 0, Math.PI * 2, 0, Math.PI / 6]}
-          />
+        <mesh position={[0, 0.19, 0]}>
+          <cylinderGeometry args={[0.92, 0.92, 0.02, 64]} />
           <meshPhysicalMaterial
             transparent
-            opacity={0.28}
-            roughness={0.02}
-            metalness={0}
-            transmission={0.9}
-            thickness={0.4}
-            ior={1.7}
-            clearcoat={1}
-            envMapIntensity={2}
+            opacity={0.12}
+            roughness={0.01}
+            metalness={0.05}
+            transmission={0.95}
+            thickness={0.02}
+            ior={1.52}
+            clearcoat={1.0}
+            clearcoatRoughness={0.01}
+            envMapIntensity={2.5}
           />
         </mesh>
 
@@ -398,13 +397,20 @@ function WatchModel({
         {/* Strap — segmented links, both directions */}
         {links.map((_, i) => {
           const dir = i < 4 ? 1 : -1;
-          const idx = i < 4 ? i : i - 3;
-          const z = dir * (0.95 + idx * 0.42);
+          const idx = i < 4 ? i : i - 4;
+          
+          // Smooth curve forming a loop under/behind the watch case
+          const angle = idx * 0.45;
+          const R = 0.6; // radius of the loop
+          const z = dir * (0.95 + R * Math.sin(angle));
+          const y = -0.02 - R * (1 - Math.cos(angle));
+          const rotX = dir * angle;
+
           return (
             <mesh
               key={i}
-              position={[0, -0.02, z]}
-              rotation={[dir * 0.12 * idx, 0, 0]}
+              position={[0, y, z]}
+              rotation={[rotX, 0, 0]}
               castShadow
             >
               <boxGeometry args={[0.78, 0.16, 0.38]} />
